@@ -1,4 +1,5 @@
 import 'package:adopt_app/providers/auth_provider.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,18 +37,20 @@ class SignupPage extends StatelessWidget {
                       password: passwordController.text);
 
                   var user = context.read<AuthProvider>().user;
-                  if (user != null) {
-                    print("You are logged in as ${user.username}");
-                  } else {
-                    print("Who are you????");
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Weird things happened")));
+                  print("You are logged in as ${user!.username}");
+                } on DioException catch (e) {
+                  if (e.response == null) return;
+                  if (e.response!.data == null) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                          e.response!.data['message'] ?? "Unexpected error")));
                 }
               },
               child: const Text("Sign Up"),
-            )
+            ),
+            const SizedBox(height: 200),
+            Text(context.read<AuthProvider>().user?.username ?? "Not Logged in")
           ],
         ),
       ),
